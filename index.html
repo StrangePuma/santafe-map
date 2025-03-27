@@ -1,106 +1,46 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Santa Fe 3D Issue Map</title>
-    <meta charset="UTF-8" />
+    <title>3D Satellite Map</title>
+    <meta charset="utf-8" />
     <style>
       html, body {
+        height: 100%;
         margin: 0;
         padding: 0;
-        height: 100%;
       }
+
       #map {
         height: 100%;
         width: 100%;
-      }
-      #formBox {
-        position: absolute;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        display: none;
-        z-index: 999;
-      }
-      #formBox input, #formBox button {
-        font-size: 14px;
-        margin-top: 5px;
       }
     </style>
     <script
       src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"
       defer
     ></script>
+    <script>
+      function initMap() {
+        const center = { lat: 35.6870, lng: -105.9378 }; // Santa Fe, NM
+
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: center,
+          zoom: 18,
+          mapTypeId: "satellite",
+          tilt: 45,
+          heading: 0,
+          disableDefaultUI: true, // Hides all controls
+          gestureHandling: "greedy", // Allows full mouse/touch interaction
+          rotateControl: false,
+          fullscreenControl: false
+        });
+
+        // Force 45° imagery (only works in satellite mode and certain zoom levels)
+        map.setTilt(45);
+      }
+    </script>
   </head>
   <body>
     <div id="map"></div>
-
-    <div id="formBox">
-      <div><strong>What's the issue?</strong></div>
-      <input id="markerInput" placeholder="E.g. pothole, outage..." size="30" />
-      <br />
-      <button onclick="addMarker()">Submit</button>
-      <button onclick="cancelMarker()">Cancel</button>
-    </div>
-
-    <script>
-      let map;
-      let clickLatLng = null;
-      const markers = [];
-
-      function initMap() {
-        map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 35.6870, lng: -105.9378 },
-          zoom: 19,
-          tilt: 45,
-          heading: 30,
-          minZoom: 17,
-          mapTypeId: "hybrid", // Satellite + labels
-          disableDefaultUI: true, // Hide all controls
-          gestureHandling: "greedy",
-        });
-
-        // Animate the camera heading slowly
-        let heading = 30;
-        setInterval(() => {
-          heading = (heading + 0.2) % 360;
-          map.setHeading(heading);
-        }, 60);
-
-        map.addListener("click", (e) => {
-          clickLatLng = e.latLng;
-          document.getElementById("formBox").style.display = "block";
-          document.getElementById("markerInput").focus();
-        });
-      }
-
-      function addMarker() {
-        const desc = document.getElementById("markerInput").value.trim();
-        if (!desc || !clickLatLng) return;
-
-        const marker = new google.maps.Marker({
-          position: clickLatLng,
-          map: map,
-          title: desc,
-        });
-
-        // Right-click to remove
-        marker.addListener("rightclick", () => {
-          marker.setMap(null);
-        });
-
-        markers.push(marker);
-        cancelMarker();
-      }
-
-      function cancelMarker() {
-        clickLatLng = null;
-        document.getElementById("markerInput").value = "";
-        document.getElementById("formBox").style.display = "none";
-      }
-    </script>
   </body>
 </html>
