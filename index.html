@@ -1,43 +1,111 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>3D Satellite Map</title>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
+    <title>Santa Fe County Issue Reporter</title>
     <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-
       #map {
-        height: 100%;
+        height: 400px;
         width: 100%;
       }
+      form {
+        margin-top: 10px;
+      }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-7bJ6F2sB4VVQ2vAFKqT3NO3UR9JHZxU&callback=initMap" defer></script>
+    <!-- Google Maps API (with geometry library) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0-Ue2RSxTDomgJ7rSo4rkZBruL3hhSCE&libraries=geometry"></script>
+    <!-- Google reCAPTCHA API -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
+      let map, countyPolygon;
+      
       function initMap() {
-        const center = { lat: 35.6870, lng: -105.9378 }; // Santa Fe, NM
-
-        const map = new google.maps.Map(document.getElementById("map"), {
-          center: center,
-          zoom: 18,
-          mapTypeId: "satellite",
-          tilt: 45,
-          heading: 0,
-          disableDefaultUI: true, // Hides all controls
-          gestureHandling: "greedy", // Allows full mouse/touch interaction
-          rotateControl: false,
-          fullscreenControl: false
+        // Initialize the map centered near Santa Fe City.
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 35.6870, lng: -105.9378 },
+          zoom: 9
         });
+        
+        // Approximate coordinates for Santa Fe County boundaries.
+        // Replace these with official boundary data.
+        const santaFeCountyCoords = [
+          { lat: 35.1000, lng: -106.2000 },
+          { lat: 35.1000, lng: -105.6000 },
+          { lat: 35.7000, lng: -105.6000 },
+          { lat: 36.0000, lng: -105.8000 },
+          { lat: 36.0000, lng: -106.1000 },
+          { lat: 35.8000, lng: -106.2000 }
+        ];
+        
+        // Create and display the county polygon.
+        countyPolygon = new google.maps.Polygon({
+          paths: santaFeCountyCoords,
+          strokeColor: "#FF0000",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#FF0000",
+          fillOpacity: 0.35
+        });
+        countyPolygon.setMap(map);
+        
+        // Listen for clicks on the map.
+        google.maps.event.addListener(map, "click", function(event) {
+          // Check if the clicked location is inside the county polygon.
+          if (google.maps.geometry.poly.containsLocation(event.latLng, countyPolygon)) {
+            // Set the hidden latitude and longitude fields.
+            document.getElementById("latitude").value = event.latLng.lat().toFixed(6);
+            document.getElementById("longitude").value = event.latLng.lng().toFixed(6);
+          } else {
+            alert("Selected point is outside Santa Fe County boundaries.");
+          }
+        });
+      }
 
-        // Force 45° imagery (only works in satellite mode and certain zoom levels)
-        map.setTilt(45);
+// https://docs.google.com/forms/d/e/1FAIpQLSdEtQpXU6P4Krkm-qrXA5TMqe0wlbGGW718XKlDDgGRABX9kw/viewform?usp=pp_url&entry.1212603718=name&entry.43164157=name@gmail.com&entry.1825285026=pothole
+      
+      // Validate reCAPTCHA before submitting the form.
+      function validateCaptcha() {
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (recaptchaResponse.length === 0) {
+          alert("Please complete the CAPTCHA.");
+          return false;
+        }
+        return true;
       }
     </script>
   </head>
-  <body>
+  <body onload="initMap()">
     <div id="map"></div>
+    
+    <!-- Form that submits directly to your Google Form -->
+    <form 
+      id="issueForm" 
+      action="https://docs.google.com/forms/d/e/1FAIpQLSdEtQpXU6P4Krkm-qrXA5TMqe0wlbGGW718XKlDDgGRABX9kw/formResponse" 
+      method="post" 
+      target="hidden_iframe"
+      onsubmit="return validateCaptcha();">
+      
+      <!-- Hidden fields for coordinates -->
+      <input type="hidden" name="entry.YOUR_LAT_ENTRY_ID" id="latitude" value="">
+      <input type="hidden" name="entry.YOUR_LNG_ENTRY_ID" id="longitude" value="">
+      
+      <!-- Visible fields for Name, Email, and Issue Description -->
+      <label for="name">Name:</label><br>
+      <input type="text" id="name" name="entry.1212603718" required><br><br>
+      
+      <label for="email">Email:</label><br>
+      <input type="email" id="email" name="entry.43164157" required><br><br>
+      
+      <label for="issueDescription">Issue Description:</label><br>
+      <textarea id="issueDescription" name="entry.1825285026" rows="4" cols="50" required></textarea><br><br>
+      
+      <!-- Google reCAPTCHA widget -->
+      <div class="g-recaptcha" data-sitekey="6LfUFQErAAAAAEtjtSsbshdwhZEYmurBD9dXt75U"></div><br>
+      
+      <input type="submit" value="Submit Issue">
+    </form>
+    
+    <!-- Hidden iframe to handle form submission without navigating away -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
   </body>
 </html>
