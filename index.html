@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Report a Problem in Santa Fe</title>
+    <title>Santa Fe 3D Issue Reporter</title>
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0-Ue2RSxTDomgJ7rSo4rkZBruL3hhSCE&callback=initMap"
       defer
@@ -12,6 +12,7 @@
         padding: 0;
         height: 100%;
         font-family: sans-serif;
+        background: #000;
       }
       #map {
         height: 100%;
@@ -26,7 +27,6 @@
       let map;
 
       function initMap() {
-        // Define bounding box for Santa Fe
         const santaFeBounds = {
           north: 35.74,
           south: 35.61,
@@ -35,11 +35,12 @@
         };
 
         map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 35.6870, lng: -105.9378 }, // Santa Fe center
-          zoom: 15,
-          tilt: 45, // Enable 3D
-          heading: 90,
-          mapId: "82bbaa54f1828684", // <-- Replace this with your custom Map ID
+          center: { lat: 35.6870, lng: -105.9378 },
+          zoom: 18,            // Zoomed in to show 3D buildings
+          minZoom: 17,         // Prevent zooming out to 2D
+          tilt: 45,            // Enable 3D tilt
+          heading: 45,         // Angled 3D view
+          mapId: "PAINTED_MAP_ID", // <- Replace with your custom Map ID
           restriction: {
             latLngBounds: santaFeBounds,
             strictBounds: true,
@@ -50,8 +51,8 @@
           fullscreenControl: false,
         });
 
-        // Optional: slow continuous rotation effect
-        let heading = 0;
+        // Optional: Animate rotation for style
+        let heading = 45;
         setInterval(() => {
           heading = (heading + 0.2) % 360;
           map.setHeading(heading);
@@ -76,9 +77,11 @@
 
           console.log("Problem reported:", { lat, lng, description });
 
-          // Future: send this data to your server or form
+          // Optional: send to backend
         }
       }
     </script>
+  </body>
+</html>
   </body>
 </html>
