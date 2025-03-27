@@ -1,120 +1,105 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Santa Fe 3D Map Reporter</title>
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0-Ue2RSxTDomgJ7rSo4rkZBruL3hhSCE&callback=initMap"
-      defer
-    ></script>
+    <title>Santa Fe 3D Issue Map</title>
+    <meta charset="UTF-8" />
     <style>
       html, body {
         margin: 0;
         padding: 0;
         height: 100%;
-        font-family: sans-serif;
       }
-
       #map {
         height: 100%;
         width: 100%;
       }
-
-      #reportBox {
+      #formBox {
         position: absolute;
         top: 10px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.95);
+        background: white;
         padding: 10px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        z-index: 10;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         display: none;
+        z-index: 999;
       }
-
-      #reportBox input, #reportBox button {
+      #formBox input, #formBox button {
         font-size: 14px;
         margin-top: 5px;
       }
     </style>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"
+      defer
+    ></script>
   </head>
   <body>
     <div id="map"></div>
 
-    <div id="reportBox">
-      <div><strong>Describe the issue:</strong></div>
-      <input type="text" id="reportInput" placeholder="E.g. Pothole, streetlight out" size="30" />
-      <br/>
-      <button onclick="submitReport()">Submit</button>
-      <button onclick="cancelReport()">Cancel</button>
+    <div id="formBox">
+      <div><strong>What's the issue?</strong></div>
+      <input id="markerInput" placeholder="E.g. pothole, outage..." size="30" />
+      <br />
+      <button onclick="addMarker()">Submit</button>
+      <button onclick="cancelMarker()">Cancel</button>
     </div>
 
     <script>
       let map;
-      let markers = [];
-      let clickLocation = null;
+      let clickLatLng = null;
+      const markers = [];
 
       function initMap() {
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 35.6870, lng: -105.9378 },
           zoom: 19,
-          minZoom: 17,
           tilt: 45,
           heading: 30,
-          mapTypeId: 'hybrid', // Satellite + labels
-          disableDefaultUI: true, // Hide all map controls
-          gestureHandling: 'greedy' // Allow scroll, pan, zoom
+          minZoom: 17,
+          mapTypeId: "hybrid", // Satellite + labels
+          disableDefaultUI: true, // Hide all controls
+          gestureHandling: "greedy",
         });
 
-        // Animate slow rotation
+        // Animate the camera heading slowly
         let heading = 30;
         setInterval(() => {
           heading = (heading + 0.2) % 360;
           map.setHeading(heading);
         }, 60);
 
-        // Click to report a problem
         map.addListener("click", (e) => {
-          clickLocation = e.latLng;
-          document.getElementById("reportBox").style.display = "block";
-          document.getElementById("reportInput").focus();
+          clickLatLng = e.latLng;
+          document.getElementById("formBox").style.display = "block";
+          document.getElementById("markerInput").focus();
         });
       }
 
-      function submitReport() {
-        const description = document.getElementById("reportInput").value.trim();
-        if (!description || !clickLocation) return;
+      function addMarker() {
+        const desc = document.getElementById("markerInput").value.trim();
+        if (!desc || !clickLatLng) return;
 
         const marker = new google.maps.Marker({
-          position: clickLocation,
+          position: clickLatLng,
           map: map,
-          title: description,
+          title: desc,
         });
 
         // Right-click to remove
         marker.addListener("rightclick", () => {
           marker.setMap(null);
-          markers = markers.filter(m => m !== marker);
         });
 
         markers.push(marker);
-
-        console.log("Problem reported:", {
-          lat: clickLocation.lat(),
-          lng: clickLocation.lng(),
-          description
-        });
-
-        // Reset form
-        clickLocation = null;
-        document.getElementById("reportInput").value = "";
-        document.getElementById("reportBox").style.display = "none";
+        cancelMarker();
       }
 
-      function cancelReport() {
-        clickLocation = null;
-        document.getElementById("reportInput").value = "";
-        document.getElementById("reportBox").style.display = "none";
+      function cancelMarker() {
+        clickLatLng = null;
+        document.getElementById("markerInput").value = "";
+        document.getElementById("formBox").style.display = "none";
       }
     </script>
   </body>
