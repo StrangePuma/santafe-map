@@ -61,20 +61,21 @@
           minZoom: 18,
           tilt: 45,
           heading: 45,
-          mapTypeId: 'hybrid', // Satellite + labels!
+          mapTypeId: 'hybrid', // Satellite + labels (buildings, streets, etc.)
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
           gestureHandling: 'greedy'
         });
 
-        // Animate rotation
+        // Animate slow rotation
         let heading = 45;
         setInterval(() => {
           heading = (heading + 0.3) % 360;
           map.setHeading(heading);
         }, 60);
 
+        // Handle user clicks
         map.addListener("click", (e) => {
           clickLocation = e.latLng;
           document.getElementById("reportBox").style.display = "block";
@@ -92,7 +93,7 @@
           title: description,
         });
 
-        // Add right-click to remove marker
+        // Right-click to remove marker
         marker.addListener("rightclick", () => {
           marker.setMap(null);
           markers = markers.filter(m => m !== marker);
