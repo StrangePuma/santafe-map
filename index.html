@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Santa Fe 3D Issue Reporter</title>
+    <title>Santa Fe 3D Map (Satellite Tilted)</title>
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0-Ue2RSxTDomgJ7rSo4rkZBruL3hhSCE&callback=initMap"
       defer
@@ -11,8 +11,6 @@
         margin: 0;
         padding: 0;
         height: 100%;
-        font-family: sans-serif;
-        background: #000;
       }
       #map {
         height: 100%;
@@ -36,29 +34,29 @@
 
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 35.6870, lng: -105.9378 },
-          zoom: 18,            // Zoomed in to show 3D buildings
-          minZoom: 17,         // Prevent zooming out to 2D
-          tilt: 45,            // Enable 3D tilt
-          heading: 45,         // Angled 3D view
-          mapId: "PAINTED_MAP_ID", // <- Replace with your custom Map ID
+          zoom: 19,
+          minZoom: 18,
+          tilt: 45,
+          heading: 30,
+          mapTypeId: 'satellite', // << Force satellite view for full 3D
           restriction: {
             latLngBounds: santaFeBounds,
             strictBounds: true,
           },
-          gestureHandling: "greedy",
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
+          gestureHandling: 'greedy'
         });
 
-        // Optional: Animate rotation for style
-        let heading = 45;
+        // Animate heading rotation (slow spin)
+        let heading = 30;
         setInterval(() => {
-          heading = (heading + 0.2) % 360;
+          heading = (heading + 0.3) % 360;
           map.setHeading(heading);
         }, 60);
 
-        // Click to report
+        // Allow click to place markers
         map.addListener("click", (e) => {
           const lat = e.latLng.lat();
           const lng = e.latLng.lng();
@@ -76,8 +74,6 @@
           });
 
           console.log("Problem reported:", { lat, lng, description });
-
-          // Optional: send to backend
         }
       }
     </script>
