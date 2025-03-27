@@ -58,24 +58,22 @@
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 35.6870, lng: -105.9378 },
           zoom: 19,
-          minZoom: 18,
+          minZoom: 17,
           tilt: 45,
-          heading: 45,
-          mapTypeId: 'hybrid', // Satellite + labels (buildings, streets, etc.)
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-          gestureHandling: 'greedy'
+          heading: 30,
+          mapTypeId: 'hybrid', // Satellite + labels
+          disableDefaultUI: true, // Hide all map controls
+          gestureHandling: 'greedy' // Allow scroll, pan, zoom
         });
 
         // Animate slow rotation
-        let heading = 45;
+        let heading = 30;
         setInterval(() => {
-          heading = (heading + 0.3) % 360;
+          heading = (heading + 0.2) % 360;
           map.setHeading(heading);
         }, 60);
 
-        // Handle user clicks
+        // Click to report a problem
         map.addListener("click", (e) => {
           clickLocation = e.latLng;
           document.getElementById("reportBox").style.display = "block";
@@ -93,7 +91,7 @@
           title: description,
         });
 
-        // Right-click to remove marker
+        // Right-click to remove
         marker.addListener("rightclick", () => {
           marker.setMap(null);
           markers = markers.filter(m => m !== marker);
@@ -107,7 +105,7 @@
           description
         });
 
-        // Reset UI
+        // Reset form
         clickLocation = null;
         document.getElementById("reportInput").value = "";
         document.getElementById("reportBox").style.display = "none";
@@ -119,7 +117,5 @@
         document.getElementById("reportBox").style.display = "none";
       }
     </script>
-  </body>
-</html>
   </body>
 </html>
