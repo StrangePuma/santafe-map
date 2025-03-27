@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Report a Problem in Santa Fe</title>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0-Ue2RSxTDomgJ7rSo4rkZBruL3hhSCE&callback=initMap"
+      defer
+    ></script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script>
+      let map;
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 35.6870, lng: -105.9378 }, // Santa Fe
+          zoom: 13,
+        });
+
+        map.addListener("click", (e) => {
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+          reportProblem(lat, lng);
+        });
+      }
+
+      function reportProblem(lat, lng) {
+        const description = prompt("Describe the problem at this location:");
+        if (description) {
+          new google.maps.Marker({
+            position: { lat, lng },
+            map: map,
+            title: description,
+          });
+
+          console.log("Problem reported:", { lat, lng, description });
+        }
+      }
+    </script>
+  </body>
+</html>
