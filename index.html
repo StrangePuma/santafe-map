@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Santa Fe 3D Map (Satellite Tilted)</title>
+    <title>Santa Fe 3D Map Reporter</title>
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0-Ue2RSxTDomgJ7rSo4rkZBruL3hhSCE&callback=initMap"
       defer
@@ -11,18 +11,48 @@
         margin: 0;
         padding: 0;
         height: 100%;
+        font-family: sans-serif;
       }
+
       #map {
         height: 100%;
         width: 100%;
+      }
+
+      #reportBox {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        z-index: 10;
+        display: none;
+      }
+
+      #reportBox input, #reportBox button {
+        font-size: 14px;
+        margin-top: 5px;
       }
     </style>
   </head>
   <body>
     <div id="map"></div>
 
+    <div id="reportBox">
+      <div><strong>Describe the issue:</strong></div>
+      <input type="text" id="reportInput" placeholder="E.g. Pothole, streetlight out" size="30" />
+      <br/>
+      <button onclick="submitReport()">Submit</button>
+      <button onclick="cancelReport()">Cancel</button>
+    </div>
+
     <script>
       let map;
+      let markers = [];
+      let clickLocation = null;
 
       function initMap() {
         const santaFeBounds = {
@@ -37,8 +67,8 @@
           zoom: 19,
           minZoom: 18,
           tilt: 45,
-          heading: 30,
-          mapTypeId: 'satellite', // << Force satellite view for full 3D
+          heading: 45,
+          mapTypeId: 'hybrid', // Satellite + labels!
           restriction: {
             latLngBounds: santaFeBounds,
             strictBounds: true,
@@ -49,35 +79,55 @@
           gestureHandling: 'greedy'
         });
 
-        // Animate heading rotation (slow spin)
-        let heading = 30;
+        // Animate rotation
+        let heading = 45;
         setInterval(() => {
           heading = (heading + 0.3) % 360;
           map.setHeading(heading);
         }, 60);
 
-        // Allow click to place markers
         map.addListener("click", (e) => {
-          const lat = e.latLng.lat();
-          const lng = e.latLng.lng();
-          reportProblem(lat, lng);
+          clickLocation = e.latLng;
+          document.getElementById("reportBox").style.display = "block";
+          document.getElementById("reportInput").focus();
         });
       }
 
-      function reportProblem(lat, lng) {
-        const description = prompt("Describe the problem at this location:");
-        if (description) {
-          new google.maps.Marker({
-            position: { lat, lng },
-            map: map,
-            title: description,
-          });
+      function submitReport() {
+        const description = document.getElementById("reportInput").value.trim();
+        if (!description || !clickLocation) return;
 
-          console.log("Problem reported:", { lat, lng, description });
-        }
+        const marker = new google.maps.Marker({
+          position: clickLocation,
+          map: map,
+          title: description,
+        });
+
+        // Add right-click to remove marker
+        marker.addListener("rightclick", () => {
+          marker.setMap(null);
+          markers = markers.filter(m => m !== marker);
+        });
+
+        markers.push(marker);
+
+        console.log("Problem reported:", {
+          lat: clickLocation.lat(),
+          lng: clickLocation.lng(),
+          description
+        });
+
+        // Reset UI
+        clickLocation = null;
+        document.getElementById("reportInput").value = "";
+        document.getElementById("reportBox").style.display = "none";
+      }
+
+      function cancelReport() {
+        clickLocation = null;
+        document.getElementById("reportInput").value = "";
+        document.getElementById("reportBox").style.display = "none";
       }
     </script>
-  </body>
-</html>
   </body>
 </html>
